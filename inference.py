@@ -124,6 +124,7 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
         loss = scene.compute_global_alignment(init='mst', niter=niter, schedule=schedule, lr=lr)
 
     save_folder = f'{args.output_dir}/{seq_name}'  #default is 'demo_tmp/NULL'
+    os.makedirs(save_folder, exist_ok=True)
     scene.save_tum_poses(f'{save_folder}/pred_traj.txt')
     return
 
@@ -288,7 +289,7 @@ if __name__ == '__main__':
         recon_fun = functools.partial(get_reconstructed_scene, args, tmpdirname, model, args.device, args.silent, args.image_size)
         
         # Call the function with default parameters
-        scene, outfile, imgs = recon_fun(
+        recon_fun(
             filelist=input_files,
             schedule='linear',
             niter=300,

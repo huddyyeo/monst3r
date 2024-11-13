@@ -107,10 +107,10 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
         scenegraph_type = scenegraph_type + "-" + str(winsize) + "-noncyclic"
     elif scenegraph_type == "oneref":
         scenegraph_type = scenegraph_type + "-" + str(refid)
-    import pdb
-    pdb.set_trace()
-    pairs = make_pairs(imgs, scene_graph=scenegraph_type, prefilter=None, symmetrize=True)
-    output = inference(pairs, model, device, batch_size=batch_size, verbose=not silent)
+    import time
+    start = time.time()
+    pairs = make_pairs(imgs, scene_graph=scenegraph_type, prefilter=None, symmetrize=True) # fast
+    output = inference(pairs, model, device, batch_size=batch_size, verbose=not silent) #590 iterations
     if len(imgs) > 2:
         mode = GlobalAlignerMode.PointCloudOptimizer  
         scene = global_aligner(output, device=device, mode=mode, verbose=not silent, shared_focal = shared_focal, temporal_smoothing_weight=temporal_smoothing_weight, translation_weight=translation_weight,
@@ -126,6 +126,10 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
 
     save_folder = f'{args.output_dir}/{seq_name}'  #default is 'demo_tmp/NULL'
     os.makedirs(save_folder, exist_ok=True)
+    output = scene.get_tum_poses()[0]
+    end = time.time()
+    print(output[-1])
+    print("Time taken = ", end - start)
     scene.save_tum_poses(f'{save_folder}/pred_traj.txt')
     return
 

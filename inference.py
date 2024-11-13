@@ -107,7 +107,8 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
         scenegraph_type = scenegraph_type + "-" + str(winsize) + "-noncyclic"
     elif scenegraph_type == "oneref":
         scenegraph_type = scenegraph_type + "-" + str(refid)
-
+    import pdb
+    pdb.set_trace()
     pairs = make_pairs(imgs, scene_graph=scenegraph_type, prefilter=None, symmetrize=True)
     output = inference(pairs, model, device, batch_size=batch_size, verbose=not silent)
     if len(imgs) > 2:
@@ -152,105 +153,6 @@ def set_scenegraph_options(inputfiles, winsize, refid, scenegraph_type):
         refid = gradio.Slider(label="Scene Graph: Id", value=0, minimum=0,
                               maximum=num_files-1, step=1, visible=False)
     return winsize, refid
-
-
-def main_demo(tmpdirname, model, device, image_size, server_name, server_port, silent=False, args=None):
-    recon_fun = functools.partial(get_reconstructed_scene, args, tmpdirname, model, device, silent, image_size)
-    model_from_scene_fun = functools.partial(get_3D_model_from_scene, tmpdirname, silent)
-    with gradio.Blocks(css=""".gradio-container {margin: 0 !important; min-width: 100%};""", title="DUSt3R Demo") as demo:
-        # scene state is save so that you can change conf_thr, cam_size... without rerunning the inference
-        scene = gradio.State(None)
-        gradio.HTML(f'<h2 style="text-align: center;">DUSt3R Demo</h2>')
-        with gradio.Column():
-            inputfiles = gradio.File(file_count="multiple")
-            with gradio.Row():
-                schedule = gradio.Dropdown(["linear", "cosine"],
-                                           value='linear', label="schedule", info="For global alignment!")
-                niter = gradio.Number(value=300, precision=0, minimum=0, maximum=5000,
-                                      label="num_iterations", info="For global alignment!")
-                seq_name = gradio.Textbox(label="Sequence Name", placeholder="NULL", value=args.seq_name, info="For evaluation")
-                scenegraph_type = gradio.Dropdown(["complete", "swin", "oneref", "swinstride", "swin2stride"],
-                                                  value='swinstride', label="Scenegraph",
-                                                  info="Define how to make pairs",
-                                                  interactive=True)
-                winsize = gradio.Slider(label="Scene Graph: Window Size", value=5,
-                                        minimum=1, maximum=1, step=1, visible=False)
-                refid = gradio.Slider(label="Scene Graph: Id", value=0, minimum=0, maximum=0, step=1, visible=False)
-
-            run_btn = gradio.Button("Run")
-
-            with gradio.Row():
-                # adjust the confidence thresholdx
-                min_conf_thr = gradio.Slider(label="min_conf_thr", value=1.1, minimum=0.0, maximum=20, step=0.01)
-                # adjust the camera size in the output pointcloud
-                cam_size = gradio.Slider(label="cam_size", value=0.05, minimum=0.001, maximum=0.1, step=0.001)
-                # adjust the temporal smoothing weight
-                temporal_smoothing_weight = gradio.Slider(label="temporal_smoothing_weight", value=0.01, minimum=0.0, maximum=0.1, step=0.001)
-                # add translation weight
-                translation_weight = gradio.Textbox(label="translation_weight", placeholder="1.0", value="1.0", info="For evaluation")
-                # change to another model
-                new_model_weights = gradio.Textbox(label="New Model", placeholder=args.weights, value=args.weights, info="Path to updated model weights")
-            with gradio.Row():
-                as_pointcloud = gradio.Checkbox(value=True, label="As pointcloud")
-                # two post process implemented
-                mask_sky = gradio.Checkbox(value=False, label="Mask sky")
-                clean_depth = gradio.Checkbox(value=True, label="Clean-up depthmaps")
-                transparent_cams = gradio.Checkbox(value=False, label="Transparent cameras")
-                # not to show camera
-                show_cam = gradio.Checkbox(value=True, label="Show Camera")
-                shared_focal = gradio.Checkbox(value=True, label="Shared Focal Length")
-                use_davis_gt_mask = gradio.Checkbox(value=False, label="Use GT Mask (DAVIS)")
-            with gradio.Row():
-                flow_loss_weight = gradio.Slider(label="Flow Loss Weight", value=0.01, minimum=0.0, maximum=1.0, step=0.001)
-                flow_loss_start_iter = gradio.Slider(label="Flow Loss Start Iter", value=0.1, minimum=0, maximum=1, step=0.01)
-                flow_loss_threshold = gradio.Slider(label="Flow Loss Threshold", value=25, minimum=0, maximum=100, step=1)
-                # for video processing
-                fps = gradio.Slider(label="FPS", value=0, minimum=0, maximum=60, step=1)
-                num_frames = gradio.Slider(label="Num Frames", value=100, minimum=0, maximum=200, step=1)
-
-            outmodel = gradio.Model3D()
-            outgallery = gradio.Gallery(label='rgb,depth,confidence, init_conf', columns=4, height="100%")
-
-            # events
-            scenegraph_type.change(set_scenegraph_options,
-                                   inputs=[inputfiles, winsize, refid, scenegraph_type],
-                                   outputs=[winsize, refid])
-            inputfiles.change(set_scenegraph_options,
-                              inputs=[inputfiles, winsize, refid, scenegraph_type],
-                              outputs=[winsize, refid])
-            run_btn.click(fn=recon_fun,
-                          inputs=[inputfiles, schedule, niter, min_conf_thr, as_pointcloud,
-                                  mask_sky, clean_depth, transparent_cams, cam_size, show_cam,
-                                  scenegraph_type, winsize, refid, seq_name, new_model_weights, 
-                                  temporal_smoothing_weight, translation_weight, shared_focal, 
-                                  flow_loss_weight, flow_loss_start_iter, flow_loss_threshold, use_davis_gt_mask,
-                                  fps, num_frames],
-                          outputs=[scene, outmodel, outgallery])
-            min_conf_thr.release(fn=model_from_scene_fun,
-                                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                         clean_depth, transparent_cams, cam_size, show_cam],
-                                 outputs=outmodel)
-            cam_size.change(fn=model_from_scene_fun,
-                            inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                    clean_depth, transparent_cams, cam_size, show_cam],
-                            outputs=outmodel)
-            as_pointcloud.change(fn=model_from_scene_fun,
-                                 inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                         clean_depth, transparent_cams, cam_size, show_cam],
-                                 outputs=outmodel)
-            mask_sky.change(fn=model_from_scene_fun,
-                            inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                    clean_depth, transparent_cams, cam_size, show_cam],
-                            outputs=outmodel)
-            clean_depth.change(fn=model_from_scene_fun,
-                               inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                       clean_depth, transparent_cams, cam_size, show_cam],
-                               outputs=outmodel)
-            transparent_cams.change(model_from_scene_fun,
-                                    inputs=[scene, min_conf_thr, as_pointcloud, mask_sky,
-                                            clean_depth, transparent_cams, cam_size, show_cam],
-                                    outputs=outmodel)
-    demo.launch(share=args.share, server_name=server_name, server_port=server_port)
 
 
 if __name__ == '__main__':
@@ -317,5 +219,4 @@ if __name__ == '__main__':
         )
         print(f"Processing completed. Output saved in {tmpdirname}/{args.seq_name}")
     else:
-        # Launch Gradio demo
-        main_demo(tmpdirname, model, args.device, args.image_size, server_name, args.server_port, silent=args.silent, args=args)
+        raise ValueError("Demo not supported")

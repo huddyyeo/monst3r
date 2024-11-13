@@ -130,6 +130,8 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
     end = time.time()
     print(output[-1])
     print("Time taken = ", end - start)
+    import pdb
+    pdb.set_trace()
     scene.save_tum_poses(f'{save_folder}/pred_traj.txt')
     return
 

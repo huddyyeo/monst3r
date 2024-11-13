@@ -101,6 +101,10 @@ class PointCloudOptimizer(BasePCOptimizer):
 
         self.flow_loss_weight = flow_loss_weight
         self.depth_regularize_weight = depth_regularize_weight
+        self.stored_flow_ij=None
+        self.stored_flow_ji=None
+        self.stored_flow_valid_mask_i=None
+        self.stored_flow_valid_mask_j=None
         if self.flow_loss_weight > 0:
             self.flow_ij, self.flow_ji, self.flow_valid_mask_i, self.flow_valid_mask_j = self.get_flow(sintel_ckpt) # (num_pairs, 2, H, W)
             if use_self_mask: self.get_motion_mask_from_pairs(*args)
@@ -116,6 +120,9 @@ class PointCloudOptimizer(BasePCOptimizer):
                 self.sam2_dynamic_masks = None
 
     def get_flow(self, sintel_ckpt=False): #TODO: test with gt flow
+        if self.stored_flow_ij is not None and self.stored_flow_ji is not None and self.stored_flow_valid_mask_i is not None and self.stored_flow_valid_mask_j is not None:
+            return self.stored_flow_ij, self.stored_flow_ji, self.stored_flow_valid_mask_i, self.stored_flow_valid_mask_j
+
         print('precomputing flow...')
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         get_valid_flow_mask = OccMask(th=3.0)
@@ -148,6 +155,10 @@ class PointCloudOptimizer(BasePCOptimizer):
         print('flow precomputed')
         # delete the flow net
         if flow_net is not None: del flow_net
+        self.stored_flow_ij = flow_ij
+        self.stored_flow_ji = flow_ji
+        self.stored_flow_valid_mask_i = valid_mask_i
+        self.stored_flow_valid_mask_j = valid_mask_j
         return flow_ij, flow_ji, valid_mask_i, valid_mask_j
 
     def get_motion_mask_from_pairs(self, view1, view2, pred1, pred2):

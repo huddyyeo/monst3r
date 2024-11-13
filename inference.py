@@ -126,9 +126,9 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
 
     save_folder = f'{args.output_dir}/{seq_name}'  #default is 'demo_tmp/NULL'
     os.makedirs(save_folder, exist_ok=True)
-    output = scene.get_tum_poses()[0]
+    poses = scene.get_tum_poses()[0]
     end = time.time()
-    print(output[-1])
+    print(poses[-1])
     print("Time taken = ", end - start)
     import pdb
     pdb.set_trace()

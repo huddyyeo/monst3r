@@ -171,13 +171,8 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     imgs = []
     # Sort items by their names
     folder_content = sorted(folder_content, key=lambda x: x.split('/')[-1])
-    s = -1
-    import pdb
-    pdb.set_trace()
+
     for path in folder_content:
-        s += 1
-        if s % stride != 0:
-            continue
         full_path = os.path.join(root, path)
         if path.lower().endswith(supported_images_extensions):
             # Process image files
@@ -235,7 +230,10 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
                 frame_interval = max(1, int(round(video_fps / fps)))
             else:
                 frame_interval = 1
+
             frame_indices = list(range(0, total_frames, frame_interval))
+            if stride > 1:
+                frame_indices = frame_indices[::stride]
             if num_frames is not None:
                 frame_indices = frame_indices[:num_frames]
 
@@ -277,6 +275,8 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     assert imgs, 'No images found at ' + root
     if verbose:
         print(f' (Found {len(imgs)} images), strided at {stride}')
+    import pdb
+    pdb.set_trace()
     return imgs
 
 def enlarge_seg_masks(folder, kernel_size=5, prefix="dynamic_mask"):

@@ -154,7 +154,7 @@ def init_from_pts3d(self, pts3d, im_focals, im_poses):
 
 
 def minimum_spanning_tree(imshapes, edges, pred_i, pred_j, conf_i, conf_j, im_conf, min_conf_thr,
-                          device, has_im_poses=True, niter_PnP=10, verbose=True, save_score_path=None):
+                          device, has_im_poses=True, niter_PnP=10, verbose=False, save_score_path=None):
     n_imgs = len(imshapes)
     eadge_and_scores = compute_edge_scores(map(i_j_ij, edges), conf_i, conf_j)
     sparse_graph = -dict_to_sparse_graph(eadge_and_scores)

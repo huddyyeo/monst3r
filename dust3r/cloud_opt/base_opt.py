@@ -68,7 +68,7 @@ class BasePCOptimizer (nn.Module):
                          pw_break=20,
                          rand_pose=torch.randn,
                          empty_cache=False,
-                         verbose=True):
+                         verbose=False):
         super().__init__()
         if not isinstance(view1['idx'], list):
             view1['idx'] = view1['idx'].tolist()

@@ -24,7 +24,7 @@ import matplotlib.pyplot as pl
 pl.ion()
 
 torch.backends.cuda.matmul.allow_tf32 = True  # for gpu >= Ampere and pytorch >= 1.12
-batch_size = 4
+batch_size = 2
 
 
 def get_args_parser():

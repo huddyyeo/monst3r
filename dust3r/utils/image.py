@@ -171,8 +171,9 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     imgs = []
     # Sort items by their names
     folder_content = sorted(folder_content, key=lambda x: x.split('/')[-1])
-    s = 0
+    s = -1
     for path in folder_content:
+        s += 1
         full_path = os.path.join(root, path)
         if path.lower().endswith(supported_images_extensions):
             # Process image files

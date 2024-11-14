@@ -25,7 +25,7 @@ pl.ion()
 
 torch.backends.cuda.matmul.allow_tf32 = True  # for gpu >= Ampere and pytorch >= 1.12
 batch_size = 4
-
+stride = 1
 
 def get_args_parser():
     parser = argparse.ArgumentParser()
@@ -99,7 +99,7 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
         dynamic_mask_path = f'data/davis/DAVIS/masked_images/480p/{seq_name}'
     else:
         dynamic_mask_path = None
-    imgs = load_images(filelist, size=image_size, verbose=not silent, dynamic_mask_root=dynamic_mask_path, fps=fps, num_frames=num_frames)
+    imgs = load_images(filelist, size=image_size, verbose=not silent, dynamic_mask_root=dynamic_mask_path, fps=fps, num_frames=num_frames, stride=stride)
     if len(imgs) == 1:
         imgs = [imgs[0], copy.deepcopy(imgs[0])]
         imgs[1]['idx'] = 1

@@ -25,7 +25,7 @@ pl.ion()
 
 torch.backends.cuda.matmul.allow_tf32 = True  # for gpu >= Ampere and pytorch >= 1.12
 batch_size = 4
-stride = 2
+stride = 4
 
 def get_args_parser():
     parser = argparse.ArgumentParser()

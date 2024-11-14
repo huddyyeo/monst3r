@@ -110,11 +110,11 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
     import time
     start = time.time()
     pairs = make_pairs(imgs, scene_graph=scenegraph_type, prefilter=None, symmetrize=True) # fast
-    print("Run dust3r inference")
+    print("Run dust3r inference", time.time() - start)
     output = inference(pairs, model, device, batch_size=batch_size, verbose=not silent) #590 iterations
     if len(imgs) > 2:
         mode = GlobalAlignerMode.PointCloudOptimizer
-        print("Init global aligner and run flow")
+        print("Init global aligner and run flow",time.time() - start)
         scene = global_aligner(output, device=device, mode=mode, verbose=not silent, shared_focal = shared_focal, temporal_smoothing_weight=temporal_smoothing_weight, translation_weight=translation_weight,
                                flow_loss_weight=flow_loss_weight, flow_loss_start_epoch=flow_loss_start_iter, flow_loss_thre=flow_loss_threshold, use_self_mask=not use_gt_mask,
                                num_total_iter=niter, empty_cache= len(filelist) > 72)
@@ -124,7 +124,7 @@ def get_reconstructed_scene(args, outdir, model, device, silent, image_size, fil
     lr = 0.01
 
     if mode == GlobalAlignerMode.PointCloudOptimizer:
-        print("Run PointCloud Optimizer")
+        print("Run PointCloud Optimizer", time.time() - start)
         loss = scene.compute_global_alignment(init='mst', niter=niter, schedule=schedule, lr=lr)
 
     save_folder = f'{args.output_dir}/{seq_name}'  #default is 'demo_tmp/NULL'

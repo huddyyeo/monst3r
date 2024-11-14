@@ -37,7 +37,8 @@ class PointCloudOptimizer(BasePCOptimizer):
                  depth_regularize_weight=0.0, num_total_iter=300, temporal_smoothing_weight=0, translation_weight=0.1, flow_loss_start_epoch=0.15, flow_loss_thre=50,
                  sintel_ckpt=False, use_self_mask=False, pxl_thre=50, sam2_mask_refine=True, motion_mask_thre=0.35, **kwargs):
         super().__init__(*args, **kwargs)
-
+        import time
+        init_start = time.time()
         self.has_im_poses = True  # by definition of this class
         self.focal_break = focal_break
         self.num_total_iter = num_total_iter
@@ -103,7 +104,10 @@ class PointCloudOptimizer(BasePCOptimizer):
         self.depth_regularize_weight = depth_regularize_weight
         if self.flow_loss_weight > 0:
             self.flow_ij, self.flow_ji, self.flow_valid_mask_i, self.flow_valid_mask_j = self.get_flow(sintel_ckpt) # (num_pairs, 2, H, W)
+            import time
+            start = time.time()
             if use_self_mask: self.get_motion_mask_from_pairs(*args)
+            print(f'Motion mask time: {time.time() - start}')
             # turn off the gradient for the flow
             self.flow_ij.requires_grad_(False)
             self.flow_ji.requires_grad_(False)
@@ -114,6 +118,7 @@ class PointCloudOptimizer(BasePCOptimizer):
                     self.refine_motion_mask_w_sam2()
             else:
                 self.sam2_dynamic_masks = None
+        print(f'Total init time: {time.time() - init_start}')
 
     def get_flow(self, sintel_ckpt=False): #TODO: test with gt flow
         print('precomputing flow...')

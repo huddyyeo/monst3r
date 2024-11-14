@@ -275,8 +275,6 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     assert imgs, 'No images found at ' + root
     if verbose:
         print(f' (Found {len(imgs)} images), strided at {stride}')
-    import pdb
-    pdb.set_trace()
     return imgs
 
 def enlarge_seg_masks(folder, kernel_size=5, prefix="dynamic_mask"):

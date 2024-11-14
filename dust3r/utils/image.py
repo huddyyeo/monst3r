@@ -171,10 +171,13 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     imgs = []
     # Sort items by their names
     folder_content = sorted(folder_content, key=lambda x: x.split('/')[-1])
+    s = 0
     for path in folder_content:
         full_path = os.path.join(root, path)
         if path.lower().endswith(supported_images_extensions):
             # Process image files
+            if s % stride != 0:
+                continue
             img = exif_transpose(PIL.Image.open(full_path)).convert('RGB')
             W1, H1 = img.size
             img = crop_img(img, size, square_ok=square_ok, crop=crop)
@@ -270,9 +273,7 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
 
     assert imgs, 'No images found at ' + root
     if verbose:
-        print(f' (Found {len(imgs)} images), striding at {stride} to give {len(imgs[::stride])} images')
-    import pdb
-    pdb.set_trace()
+        print(f' (Found {len(imgs)} images), strided at {stride}')
     return imgs[::stride]
 
 def enlarge_seg_masks(folder, kernel_size=5, prefix="dynamic_mask"):

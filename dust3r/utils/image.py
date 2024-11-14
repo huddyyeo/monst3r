@@ -270,10 +270,8 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
 
     assert imgs, 'No images found at ' + root
     if verbose:
-        print(f' (Found {len(imgs)} images)')
-    import pdb
-    pdb.set_trace()
-    return imgs
+        print(f' (Found {len(imgs)} images), striding at {stride} to give {len(imgs[::stride])} images')
+    return imgs[::stride]
 
 def enlarge_seg_masks(folder, kernel_size=5, prefix="dynamic_mask"):
     mask_pathes = glob.glob(f'{folder}/{prefix}_*.png')

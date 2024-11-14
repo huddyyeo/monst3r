@@ -296,8 +296,8 @@ class PointCloudOptimizer(BasePCOptimizer):
                 for i in range(self.n_imgs):
                     self.sam2_dynamic_masks[i] = torch.from_numpy(self.sam2_dynamic_masks[i][0]).to(device)
                     self.dynamic_masks[i] = self.dynamic_masks[i].to(device)
-                    acc =(self.dynamic_masks[i] == self.sam2_dynamic_masks[i]).sum() / self.dynamic_masks[i].numel()
-                    print("mask accuracy", i, acc)
+                    # acc =(self.dynamic_masks[i] == self.sam2_dynamic_masks[i]).sum() / self.dynamic_masks[i].numel()
+                    # print("mask accuracy", i, acc)
                     self.dynamic_masks[i] = self.dynamic_masks[i] | self.sam2_dynamic_masks[i]
         
                 # Clean up

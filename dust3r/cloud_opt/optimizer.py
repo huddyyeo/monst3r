@@ -103,6 +103,7 @@ class PointCloudOptimizer(BasePCOptimizer):
         self.depth_regularize_weight = depth_regularize_weight
         if self.flow_loss_weight > 0:
             self.flow_ij, self.flow_ji, self.flow_valid_mask_i, self.flow_valid_mask_j = self.get_flow(sintel_ckpt) # (num_pairs, 2, H, W)
+            print("Flow computed")
             if use_self_mask: self.get_motion_mask_from_pairs(*args)
             # turn off the gradient for the flow
             self.flow_ij.requires_grad_(False)
@@ -161,6 +162,7 @@ class PointCloudOptimizer(BasePCOptimizer):
         T_j = []
         depth_maps_i = []
         depth_maps_j = []
+        print("Computing motion mask of len", symmetry_pairs_idx)
         for i, j in tqdm(symmetry_pairs_idx):
             new_view1 = {}
             new_view2 = {}

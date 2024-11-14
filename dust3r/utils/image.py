@@ -172,6 +172,8 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     # Sort items by their names
     folder_content = sorted(folder_content, key=lambda x: x.split('/')[-1])
     s = -1
+    import pdb
+    pdb.set_trace()
     for path in folder_content:
         s += 1
         if s % stride != 0:

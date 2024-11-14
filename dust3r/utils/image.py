@@ -174,11 +174,11 @@ def load_images(folder_or_list, size, square_ok=False, verbose=True, dynamic_mas
     s = -1
     for path in folder_content:
         s += 1
+        if s % stride != 0:
+            continue
         full_path = os.path.join(root, path)
         if path.lower().endswith(supported_images_extensions):
             # Process image files
-            if s % stride != 0:
-                continue
             img = exif_transpose(PIL.Image.open(full_path)).convert('RGB')
             W1, H1 = img.size
             img = crop_img(img, size, square_ok=square_ok, crop=crop)
